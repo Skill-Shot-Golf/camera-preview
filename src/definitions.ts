@@ -74,4 +74,7 @@ export interface CameraPreviewPlugin {
   setFlashMode(options: { flashMode: CameraPreviewFlashMode | string }): Promise<void>;
   flip(): Promise<void>;
   setOpacity(options: CameraOpacityOptions): Promise<{}>;
+  getMaxZoom(): Promise<number>;
+  getZoom(): Promise<number>;
+  setZoom(zoom?: number, onSuccess?: CameraPreviewSuccessHandler, onError?: CameraPreviewErrorHandler): void;
 }

@@ -29,14 +29,19 @@ import java.io.File;
 import java.util.List;
 import org.json.JSONArray;
 
-@CapacitorPlugin(name = "CameraPreview", permissions = { @Permission(strings = { CAMERA, RECORD_AUDIO }, alias = CameraPreview.CAMERA_PERMISSION_ALIAS) })
+@CapacitorPlugin(
+    name = "CameraPreview",
+    permissions = { @Permission(strings = { CAMERA, RECORD_AUDIO }, alias = CameraPreview.CAMERA_PERMISSION_ALIAS) }
+)
 public class CameraPreview extends Plugin implements CameraActivity.CameraPreviewListener {
 
     static final String CAMERA_PERMISSION_ALIAS = "camera";
 
     private static String VIDEO_FILE_PATH = "";
     private static String VIDEO_FILE_EXTENSION = ".mp4";
-
+    private static final String ZOOM_ACTION = "setZoom";
+    private static final String GET_ZOOM_ACTION = "getZoom";
+    private static final String GET_MAX_ZOOM_ACTION = "getMaxZoom";
     private String captureCallbackId = "";
     private String snapshotCallbackId = "";
     private String recordCallbackId = "";
@@ -192,6 +197,69 @@ public class CameraPreview extends Plugin implements CameraActivity.CameraPrevie
         fragment.setCameraParameters(params);
 
         call.resolve();
+    }
+
+    @PluginMethod
+    public boolean getMaxZoom(PluginCall call) {
+        if (this.hasCamera(call) == false) {
+            call.reject("Camera is not running");
+            return;
+        }
+
+        Camera camera = fragment.getCamera();
+        Camera.Parameters params = camera.getParameters();
+
+        if (camera.getParameters().isZoomSupported()) {
+            int maxZoom = camera.getParameters().getMaxZoom();
+            call.success(maxZoom);
+        } else {
+            call.error("Zoom not supported");
+        }
+
+        return true;
+    }
+
+    @PluginMethod
+    public boolean getZoom(PluginCall call) {
+        if (this.hasCamera(call) == false) {
+            call.reject("Camera is not running");
+            return;
+        }
+
+        Camera camera = fragment.getCamera();
+        Camera.Parameters params = camera.getParameters();
+
+        if (camera.getParameters().isZoomSupported()) {
+            int getZoom = camera.getParameters().getZoom();
+            call.success(getZoom);
+        } else {
+            call.error("Zoom not supported");
+        }
+
+        return true;
+    }
+
+    @PluginMethod
+    public boolean setZoom(PluginCall call) {
+        if (this.hasCamera(call) == false) {
+            call.reject("Camera is not running");
+            return;
+        }
+
+        Camera camera = fragment.getCamera();
+        Camera.Parameters params = camera.getParameters();
+        Integer zoom = call.getInt("zoom");
+
+        if (camera.getParameters().isZoomSupported()) {
+            params.setZoom(zoom);
+            fragment.setCameraParameters(params);
+
+            call.success(zoom);
+        } else {
+            call.error("Zoom not supported");
+        }
+
+        return true;
     }
 
     @PluginMethod
